@@ -3,6 +3,7 @@ import pandas as pd
 import subprocess
 import os
 from typing import List
+import whisper
 
 # Configuração da página
 st.set_page_config(
@@ -18,6 +19,12 @@ st.markdown("""
 Insira uma lista de URLs de vídeos para extrair o áudio e gerar transcrições automaticamente.
 Suporta YouTube e links diretos de vídeo.
 """)
+
+@st.cache_resource
+def load_whisper_model():
+    return whisper.load_model("base")
+
+model = load_whisper_model()
 
 def download_audio(url: str, output_path: str) -> str:
     """
@@ -55,17 +62,17 @@ def download_audio(url: str, output_path: str) -> str:
 
 def transcribe_audio(audio_path: str) -> str:
     """
-    Transcribes audio file using the manus-speech-to-text utility.
+    Transcribes audio file using OpenAI Whisper.
     """
     if not audio_path or not os.path.exists(audio_path):
         return "Erro: Arquivo de áudio não encontrado."
     
     try:
-        command = ["manus-speech-to-text", audio_path]
-        result = subprocess.run(command, check=True, capture_output=True, text=True)
-        return result.stdout.strip()
-    except subprocess.CalledProcessError as e:
-        return f"Erro durante a transcrição: {e}"
+        st.info(f"Transcrevendo áudio com Whisper: {os.path.basename(audio_path)}...")
+        result = model.transcribe(audio_path)
+        return result["text"]
+    except Exception as e:
+        return f"Erro durante a transcrição com Whisper: {e}"
 
 def process_urls(urls: List[str]) -> pd.DataFrame:
     """
@@ -116,9 +123,9 @@ with col1:
             placeholder="https://www.youtube.com/watch?v=...\nhttps://exemplo.com/video.mp4\n...",
             height=150
         )
-        urls = [url.strip() for url in urls_text.split('\n') if url.strip()]
+        urls = [url.strip() for url in urls_text.split("\n") if url.strip()]
     else:
-        uploaded_file = st.file_uploader("Faça upload de um arquivo CSV com URLs", type=['csv'])
+        uploaded_file = st.file_uploader("Faça upload de um arquivo CSV com URLs", type=["csv"])
         urls = []
         if uploaded_file is not None:
             try:
@@ -151,7 +158,7 @@ if st.button("🚀 Iniciar Transcrição", type="primary", use_container_width=T
         col1, col2 = st.columns(2)
         
         with col1:
-            csv = df_results.to_csv(index=False).encode('utf-8')
+            csv = df_results.to_csv(index=False).encode("utf-8")
             st.download_button(
                 label="📥 Baixar como CSV",
                 data=csv,
@@ -164,8 +171,8 @@ if st.button("🚀 Iniciar Transcrição", type="primary", use_container_width=T
             try:
                 import io
                 buffer = io.BytesIO()
-                with pd.ExcelWriter(buffer, engine='openpyxl') as writer:
-                    df_results.to_excel(writer, index=False, sheet_name='Transcrições')
+                with pd.ExcelWriter(buffer, engine=\'openpyxl\') as writer:
+                    df_results.to_excel(writer, index=False, sheet_name=\'Transcrições\')
                 buffer.seek(0)
                 st.download_button(
                     label="📥 Baixar como Excel",

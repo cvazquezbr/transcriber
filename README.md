@@ -7,7 +7,7 @@ Um aplicativo Python completo com interface gráfica que permite receber uma lis
 - **Interface Web Intuitiva:** Interface moderna construída com Streamlit
 - **Suporte Amplo:** URLs do YouTube, Vimeo e links diretos de vídeo
 - **Extração de Áudio:** Processamento de alta qualidade com FFmpeg
-- **Transcrição Automática:** Conversão de fala para texto
+- **Transcrição Automática:** Conversão de fala para texto usando OpenAI Whisper
 - **Múltiplos Formatos de Entrada:** Cole URLs ou faça upload de arquivo CSV
 - **Exportação Flexível:** Baixe resultados em CSV ou Excel
 - **Processamento em Tempo Real:** Acompanhe o progresso com barra de progresso
@@ -19,6 +19,7 @@ Antes de começar, você precisará ter instalado em sua máquina:
 - **Python 3.8 ou superior**
 - **FFmpeg** (para processamento de áudio)
 - **Git** (para clonar o repositório)
+- **PyTorch** (para o Whisper)
 
 ### Instalando FFmpeg
 
@@ -27,7 +28,7 @@ Antes de começar, você precisará ter instalado em sua máquina:
 # Usando Chocolatey
 choco install ffmpeg
 
-# Ou baixe manualmente de: https://ffmpeg.org/download.html
+# Ou baixe manualmente de: https://ffmpeg.org/download.html e adicione ao PATH
 ```
 
 #### macOS
@@ -39,6 +40,18 @@ brew install ffmpeg
 ```bash
 sudo apt-get update
 sudo apt-get install ffmpeg
+```
+
+### Instalando PyTorch
+
+O PyTorch é uma dependência do Whisper. A instalação pode variar dependendo da sua GPU. Visite o site oficial do PyTorch para obter as instruções mais recentes e adequadas ao seu sistema:
+
+[https://pytorch.org/get-started/locally/](https://pytorch.org/get-started/locally/)
+
+Para a maioria dos usuários com CPU, o comando será:
+
+```bash
+pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cpu
 ```
 
 ## 🚀 Passo a Passo de Instalação e Execução
@@ -59,7 +72,7 @@ Crie um ambiente virtual para isolar as dependências:
 ```bash
 # No Windows
 python -m venv venv
-venv\Scripts\activate
+virtualenv\Scripts\activate
 
 # No macOS/Linux
 python3 -m venv venv
@@ -68,17 +81,13 @@ source venv/bin/activate
 
 ### 3. Instalar Dependências
 
-Com o ambiente virtual ativado, instale as dependências:
+Com o ambiente virtual ativado, instale as dependências (incluindo o Whisper):
 
 ```bash
 pip install -r requirements.txt
 ```
 
-Ou instale manualmente:
-
-```bash
-pip install streamlit pandas yt-dlp tabulate openpyxl
-```
+*Nota: Certifique-se de que o `ffmpeg` e o `PyTorch` estão instalados corretamente antes de instalar as dependências.*
 
 ### 4. Executar a Aplicação
 
@@ -127,37 +136,13 @@ transcriber/
 └── temp_files/           # Diretório temporário (criado automaticamente)
 ```
 
-## 🔧 Configurações Avançadas
-
-### Variáveis de Ambiente
-
-Você pode configurar algumas opções via variáveis de ambiente:
-
-```bash
-# Definir porta customizada (padrão: 8501)
-streamlit run app.py --server.port 8000
-
-# Desabilitar o navegador automático
-streamlit run app.py --logger.level=info
-```
-
-### Arquivo de Configuração
-
-Crie um arquivo `.streamlit/config.toml` para configurações persistentes:
-
-```toml
-[server]
-port = 8501
-headless = false
-
-[logger]
-level = "info"
-```
-
 ## 🐛 Solução de Problemas
 
 ### Erro: "ffmpeg not found"
 Certifique-se de que o FFmpeg está instalado e acessível no PATH do seu sistema.
+
+### Erro: "whisper" ou "torch" não encontrado
+Certifique-se de ter instalado o PyTorch e o `openai-whisper` conforme as instruções na seção de pré-requisitos.
 
 ### Erro: "yt-dlp failed"
 Atualize o yt-dlp:
@@ -173,7 +158,7 @@ pip install --upgrade certifi
 
 ### Transcrição vazia ou incompleta
 - Verifique se o vídeo contém áudio
-- Certifique-se de que o idioma do áudio é suportado
+- Certifique-se de que o idioma do áudio é suportado pelo modelo Whisper
 - Tente com um vídeo diferente para descartar problemas específicos
 
 ## 📝 Exemplo de Arquivo CSV
@@ -195,8 +180,8 @@ https://exemplo.com/video.mp4
 
 ## 📊 Limites e Considerações
 
-- **Tempo de Processamento:** Depende da duração do vídeo e velocidade da internet
-- **Espaço em Disco:** Certifique-se de ter espaço suficiente para os arquivos temporários
+- **Tempo de Processamento:** Depende da duração do vídeo, velocidade da internet e capacidade do seu hardware (CPU/GPU)
+- **Espaço em Disco:** Certifique-se de ter espaço suficiente para os arquivos temporários e modelos do Whisper
 - **Qualidade de Áudio:** Vídeos com áudio de melhor qualidade produzem transcrições mais precisas
 
 ## 🤝 Contribuindo

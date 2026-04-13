@@ -3,6 +3,10 @@ import sys
 import pandas as pd
 import subprocess
 from typing import List
+import whisper
+
+# Load Whisper model once
+model = whisper.load_model("base")
 
 def download_audio(url: str, output_path: str) -> str:
     """
@@ -41,18 +45,17 @@ def download_audio(url: str, output_path: str) -> str:
 
 def transcribe_audio(audio_path: str) -> str:
     """
-    Transcribes audio file using the manus-speech-to-text utility.
+    Transcribes audio file using OpenAI Whisper.
     """
     if not audio_path or not os.path.exists(audio_path):
         return "Erro: Arquivo de áudio não encontrado."
     
-    print(f"Transcrevendo áudio...")
+    print(f"Transcrevendo áudio com Whisper: {os.path.basename(audio_path)}...")
     try:
-        command = ["manus-speech-to-text", audio_path]
-        result = subprocess.run(command, check=True, capture_output=True, text=True)
-        return result.stdout.strip()
-    except subprocess.CalledProcessError as e:
-        print(f"Erro na transcrição: {e}")
+        result = model.transcribe(audio_path)
+        return result["text"]
+    except Exception as e:
+        print(f"Erro durante a transcrição com Whisper: {e}")
         return "Erro durante a transcrição."
 
 def process_urls(urls: List[str]) -> pd.DataFrame:
@@ -88,7 +91,7 @@ def main():
     print(df.to_markdown(index=False))
     
     df.to_csv("transcricoes.csv", index=False)
-    print("\nResultados salvos em 'transcricoes.csv'.")
+    print("\nResultados salvos em \'transcricoes.csv\'.")
 
 if __name__ == "__main__":
     main()
