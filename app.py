@@ -171,8 +171,8 @@ if st.button("🚀 Iniciar Transcrição", type="primary", use_container_width=T
             try:
                 import io
                 buffer = io.BytesIO()
-                with pd.ExcelWriter(buffer, engine=\'openpyxl\') as writer:
-                    df_results.to_excel(writer, index=False, sheet_name=\'Transcrições\')
+                with pd.ExcelWriter(buffer, engine='openpyxl') as writer:
+                    df_results.to_excel(writer, index=False, sheet_name='Transcrições')
                 buffer.seek(0)
                 st.download_button(
                     label="📥 Baixar como Excel",
