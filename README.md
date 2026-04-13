@@ -81,7 +81,16 @@ source venv/bin/activate
 
 ### 3. Instalar Dependências
 
-Com o ambiente virtual ativado, instale as dependências (incluindo o Whisper):
+**⚠️ Aviso Importante:** Existe um pacote Python legado chamado `whisper` que **não** é o que precisamos. Certifique-se de instalar o `openai-whisper`.
+
+Para evitar confusões, primeiro desinstale qualquer versão antiga do `whisper` que possa ter sido instalada:
+```bash
+pip uninstall whisper
+```
+Quando solicitado, digite `y` e pressione Enter.
+
+Em seguida, com o ambiente virtual ativado, instale as dependências (incluindo o `openai-whisper` e `torch`):
+
 
 ```bash
 pip install -r requirements.txt
@@ -142,7 +151,11 @@ transcriber/
 Certifique-se de que o FFmpeg está instalado e acessível no PATH do seu sistema.
 
 ### Erro: "whisper" ou "torch" não encontrado
-Certifique-se de ter instalado o PyTorch e o `openai-whisper` conforme as instruções na seção de pré-requisitos.
+Este erro geralmente ocorre se você instalou o pacote `whisper` (legado) em vez do `openai-whisper`.
+
+**Solução:**
+1. Desinstale o pacote `whisper` incorreto: `pip uninstall whisper`
+2. Reinstale as dependências corretamente: `pip install -r requirements.txt`
 
 ### Erro: "yt-dlp failed"
 Atualize o yt-dlp:
